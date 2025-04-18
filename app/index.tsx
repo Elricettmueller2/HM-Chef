@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>The Crazy HM Chef App</Text>
+      <Text style={styles.title}>Outofthisworld</Text>
       <Image 
         source={require('../assets/alien.png')} 
         style={styles.alienImage}
