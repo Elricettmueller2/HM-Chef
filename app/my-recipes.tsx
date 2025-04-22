@@ -1,44 +1,48 @@
 import React from 'react';
-import { StyleSheet, Text, View, FlatList, Image } from 'react-native';
-
-// Temporary mock data - will be replaced with Context data later
-const TEMP_RECIPES = [
-  {
-    id: '1',
-    name: 'Pasta Carbonara',
-    description: 'Classic Italian pasta dish with eggs, cheese, pancetta, and pepper.',
-    image: 'https://via.placeholder.com/100'
-  },
-  {
-    id: '2',
-    name: 'Chicken Curry',
-    description: 'Spicy chicken curry with onions, tomatoes, and aromatic spices.',
-    image: 'https://via.placeholder.com/100'
-  },
-];
+import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity } from 'react-native';
+import { useRecipes } from '../context/RecipeContext';
+import { router } from 'expo-router';
 
 export default function MyRecipesScreen() {
+  const { recipes } = useRecipes();
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Recipes</Text>
       
-      {TEMP_RECIPES.length === 0 ? (
-        <Text style={styles.emptyText}>No recipes saved yet. Create your first recipe!</Text>
+      {recipes.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No recipes saved yet.</Text>
+          <TouchableOpacity 
+            style={styles.createButton}
+            onPress={() => router.push('/new-recipe')}
+          >
+            <Text style={styles.createButtonText}>Create your first recipe</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
-          data={TEMP_RECIPES}
+          data={recipes}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={styles.recipeCard}>
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.recipeImage} 
-              />
-              <View style={styles.recipeInfo}>
-                <Text style={styles.recipeName}>{item.name}</Text>
-                <Text style={styles.recipeDescription}>{item.description}</Text>
+            <TouchableOpacity 
+              style={styles.recipeCard}
+              onPress={() => console.log('View recipe details', item.id)}
+            >
+              <View style={styles.recipeContent}>
+                <View style={styles.recipeInfo}>
+                  <Text style={styles.recipeName}>{item.name}</Text>
+                  <Text style={styles.recipeDescription}>{item.description}</Text>
+                </View>
+                
+                {item.imageUri && (
+                  <Image 
+                    source={{ uri: item.imageUri }} 
+                    style={styles.recipeImage} 
+                  />
+                )}
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}
@@ -58,17 +62,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#e74c3c',
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
     color: '#7f8c8d',
-    marginTop: 20,
+    marginBottom: 20,
+  },
+  createButton: {
+    backgroundColor: '#e74c3c',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   recipeCard: {
-    flexDirection: 'row',
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
-    padding: 10,
+    padding: 15,
     marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -76,15 +95,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  recipeImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 5,
+  recipeContent: {
+    flexDirection: 'row',
   },
   recipeInfo: {
     flex: 1,
-    marginLeft: 15,
-    justifyContent: 'center',
+    marginRight: 10,
   },
   recipeName: {
     fontSize: 18,
@@ -94,5 +110,10 @@ const styles = StyleSheet.create({
   recipeDescription: {
     fontSize: 14,
     color: '#555',
+  },
+  recipeImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 5,
   },
 });
