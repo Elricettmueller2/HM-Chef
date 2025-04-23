@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, FlatList, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { useRecipes } from '../context/RecipeContext';
 
 // Define the meal type for TypeScript
 interface Meal {
@@ -7,6 +8,8 @@ interface Meal {
   strMeal: string;
   strCategory: string;
   strMealThumb: string;
+  strInstructions?: string;
+  [key: string]: string | undefined;
 }
 
 export default function SearchScreen() {
@@ -14,6 +17,8 @@ export default function SearchScreen() {
   const [searchResults, setSearchResults] = useState<Meal[]>([]);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { addRecipe } = useRecipes();
 
   const searchRecipes = async () => {
     if (!searchQuery.trim()) return;
@@ -30,6 +35,62 @@ export default function SearchScreen() {
       setSearchResults([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchFullRecipeDetails = async (mealId: string): Promise<Meal | null> => {
+    try {
+      const response = await fetch(
+        `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`
+      );
+      const data = await response.json();
+      return data.meals && data.meals.length > 0 ? data.meals[0] : null;
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+      return null;
+    }
+  };
+
+  const extractIngredients = (meal: Meal): string => {
+    let ingredientsList = '';
+    
+    for (let i = 1; i <= 20; i++) {
+      const ingredient = meal[`strIngredient${i}`];
+      const measure = meal[`strMeasure${i}`];
+      
+      if (ingredient && ingredient.trim()) {
+        ingredientsList += `${measure ? measure + ' ' : ''}${ingredient}\n`;
+      }
+    }
+    
+    return ingredientsList.trim();
+  };
+
+  const handleSaveRecipe = async (meal: Meal) => {
+    setIsSaving(true);
+    
+    try {
+      const fullMeal = await fetchFullRecipeDetails(meal.idMeal);
+      
+      if (!fullMeal) {
+        Alert.alert('Error', 'Could not fetch complete recipe details.');
+        return;
+      }
+      
+      const recipe = {
+        name: fullMeal.strMeal,
+        description: `${fullMeal.strInstructions || 'No instructions provided'}\n\nIngredients:\n${extractIngredients(fullMeal)}`,
+        imageUri: fullMeal.strMealThumb,
+      };
+      
+      addRecipe(recipe);
+      
+      Alert.alert('Recipe Saved', `"${fullMeal.strMeal}" has been added to your recipes.`);
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      Alert.alert('Error', 'Failed to save the recipe. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -77,6 +138,7 @@ export default function SearchScreen() {
                   ]}
                 />
               </TouchableOpacity>
+              <Button title="Save Recipe" onPress={() => handleSaveRecipe(item)} disabled={isSaving} />
             </View>
           )}
         />
