@@ -21,7 +21,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: 'Byte',
             tabBarLabel: 'Home',
           }}
         />

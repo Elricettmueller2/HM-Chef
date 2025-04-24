@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "HM-Chef",
-    "slug": "HM-Chef",
+    "name": "Byte",
+    "slug": "byte",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,7 +26,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "hm-chef",
+    "scheme": "byte",
     "experiments": {
       "typedRoutes": true
     },
